@@ -46,7 +46,7 @@ $api->setNameServers('example.com', ['ns1.host.com', 'ns2.host.com']);
 
 ## Supported Providers
 
-Most DNS providers **require an API key**, while some may need **additional settings** such as authentication credentials or specific server configurations. All required values must be set in the `.env` file.
+Registrar adapters require provider-specific API credentials. Pass the required credentials in the adapter configuration array; optional sandbox or endpoint settings can be supplied where supported.
 
 | Provider    |
 |------------|
@@ -56,6 +56,8 @@ Most DNS providers **require an API key**, while some may need **additional sett
 | **Dynadot** |
 | **Name.com** |
 | **OpenSRS** |
+
+Name.com and OpenSRS implement the common Cardo DRS lifecycle and DNS methods. They also expose provider-specific helpers for features such as pricing, transfer status, authorization codes, auto-renewal, DNSSEC or glue/vanity nameservers where the provider supports them.
 
 ## Credentials per Adapter
 
