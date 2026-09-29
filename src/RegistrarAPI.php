@@ -7,8 +7,6 @@ final class RegistrarAPI
 {
     /** brand aliases (input => canonical Studly) */
     private const ALIAS = [
-        'cf'        => 'Cloudflare',
-        'cloudflare'=> 'Cloudflare',
         'namesilo'  => 'Namesilo',
         'name-silo' => 'Namesilo',
         'go-daddy'  => 'GoDaddy',
@@ -31,7 +29,7 @@ final class RegistrarAPI
         $namespaces = ['\\Namingo\\Cardo\\DRS\\Adapters\\'];
         $candidates = [];
         foreach ($namespaces as $ns) {
-            $candidates[] = $ns . $studly;              // e.g. \...Adapters\Cloudflare
+            $candidates[] = $ns . $studly;
             $candidates[] = $ns . $studly . 'Adapter';  // e.g. \...Adapters\CloudflareAdapter
         }
 
