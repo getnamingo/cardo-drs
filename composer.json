@@ -1,6 +1,6 @@
 {
   "name": "namingo/cardo-drs",
-  "description": "Unified PHP Registrar API (NameSilo, GoDaddy, Namecheap, Dynadot) with pluggable adapters.",
+  "description": "Cardo DRS - a unified PHP interface for working with multiple domain registrar APIs.",
   "type": "library",
   "license": "MIT",
   "keywords": ["domain", "registrar", "api", "namesilo", "godaddy", "namecheap", "dynadot"],
