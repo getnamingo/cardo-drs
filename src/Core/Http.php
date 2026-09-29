@@ -19,10 +19,6 @@ final class Http
         $options['timeout'] ??= $timeout;
         $options['connect_timeout'] ??= $timeout;
 
-        if (isset($options['headers'])) {
-            $options['headers'] = self::normalizeHeaders($options['headers']);
-        }
-
         try {
             $response = self::client()->request($method, $url, $options);
 
@@ -41,20 +37,4 @@ final class Http
         return self::$client ??= new Client();
     }
 
-    private static function normalizeHeaders(array $headers): array
-    {
-        $normalized = [];
-
-        foreach ($headers as $name => $value) {
-            if (is_string($name)) {
-                $normalized[$name] = $value;
-                continue;
-            }
-
-            [$header, $headerValue] = array_pad(explode(':', (string) $value, 2), 2, '');
-            $normalized[trim($header)] = trim($headerValue);
-        }
-
-        return $normalized;
-    }
 }
