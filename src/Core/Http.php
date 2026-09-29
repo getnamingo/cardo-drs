@@ -1,47 +1,79 @@
 <?php
 namespace Namingo\Cardo\DRS\Core;
 
-final class Http {
-    public static function get(string $url, array $headers=[], int $timeout=20): array {
-        return self::req('GET', $url, null, $headers, $timeout);
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+
+final class Http
+{
+    private static ?Client $client = null;
+
+    public static function request(
+        string $method,
+        string $url,
+        array $options = [],
+        int $timeout = 30
+    ): array {
+        $options['http_errors'] = false;
+        $options['timeout'] ??= $timeout;
+        $options['connect_timeout'] ??= $timeout;
+
+        if (isset($options['headers'])) {
+            $options['headers'] = self::normalizeHeaders($options['headers']);
+        }
+
+        try {
+            $response = self::client()->request($method, $url, $options);
+
+            return [
+                $response->getStatusCode(),
+                (string) $response->getBody(),
+                '',
+            ];
+        } catch (GuzzleException $e) {
+            return [0, '', $e->getMessage()];
+        }
     }
-    public static function delete(string $url, array $headers=[], int $timeout=20): array {
-        return self::req('DELETE', $url, null, $headers, $timeout);
+
+    public static function get(string $url, array $headers = [], int $timeout = 20): array
+    {
+        return self::request('GET', $url, ['headers' => $headers], $timeout);
     }
-    public static function postJson(string $url, array $json, array $headers=[], int $timeout=30): array {
-        $headers[] = 'Content-Type: application/json';
-        return self::req('POST', $url, json_encode($json), $headers, $timeout);
+
+    public static function delete(string $url, array $headers = [], int $timeout = 20): array
+    {
+        return self::request('DELETE', $url, ['headers' => $headers], $timeout);
     }
-    public static function putJson(string $url, array $json, array $headers=[], int $timeout=30): array {
-        $headers[] = 'Content-Type: application/json';
-        return self::req('PUT', $url, json_encode($json), $headers, $timeout);
+
+    public static function postJson(string $url, array $json, array $headers = [], int $timeout = 30): array
+    {
+        return self::request('POST', $url, ['headers' => $headers, 'json' => $json], $timeout);
     }
-    public static function patchJson(string $url, array $json, array $headers=[], int $timeout=30): array {
-        $headers[] = 'Content-Type: application/json';
-        return self::req('PATCH', $url, json_encode($json), $headers, $timeout);
+
+    public static function putJson(string $url, array $json, array $headers = [], int $timeout = 30): array
+    {
+        return self::request('PUT', $url, ['headers' => $headers, 'json' => $json], $timeout);
     }
-    public static function postRaw(string $url, string $body, array $headers=[], int $timeout=30): array {
-        return self::req('POST', $url, $body, $headers, $timeout);
+
+    private static function client(): Client
+    {
+        return self::$client ??= new Client();
     }
-    public static function postForm(string $url, array $form, array $headers=[], int $timeout=30): array {
-        $headers[] = 'Content-Type: application/x-www-form-urlencoded';
-        return self::req('POST', $url, http_build_query($form), $headers, $timeout);
-    }
-    private static function req(string $method, string $url, ?string $body, array $headers, int $timeout): array {
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST  => $method,
-            CURLOPT_TIMEOUT        => $timeout,
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_HTTPHEADER     => $headers,
-        ]);
-        if ($body !== null) curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-        $resp = curl_exec($ch);
-        $err  = curl_error($ch);
-        $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-        curl_close($ch);
-        return [$code, $resp, $err];
+
+    private static function normalizeHeaders(array $headers): array
+    {
+        $normalized = [];
+
+        foreach ($headers as $name => $value) {
+            if (is_string($name)) {
+                $normalized[$name] = $value;
+                continue;
+            }
+
+            [$header, $headerValue] = array_pad(explode(':', (string) $value, 2), 2, '');
+            $normalized[trim($header)] = trim($headerValue);
+        }
+
+        return $normalized;
     }
 }
