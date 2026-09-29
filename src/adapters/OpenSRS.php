@@ -94,9 +94,6 @@ final class OpenSRS extends BaseAdapter
         $attrs = [
             'domain' => $domain,
             'period' => (int) ($opts['years'] ?? 1),
-            'contact_set' => [],
-            'custom_tech_contact' => 0,
-            'custom_nameservers' => 0,
             'reg_username' => $this->username,
             'reg_password' => $this->password,
             'reg_type' => 'transfer',
