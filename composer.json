@@ -45,6 +45,9 @@
   "minimum-stability": "stable",
   "prefer-stable": true,
   "scripts": {
-    "test": "php tests/AdapterRegressionTest.php"
+    "test": [
+      "php tests/AutoloadRegressionTest.php",
+      "php tests/AdapterRegressionTest.php"
+    ]
   }
 }
