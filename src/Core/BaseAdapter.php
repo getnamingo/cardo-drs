@@ -1,5 +1,5 @@
 <?php
-namespace RegistrarAPI\Core;
+namespace Namingo\Cardo\DRS\Core;
 
 abstract class BaseAdapter {
     protected string $brand;
