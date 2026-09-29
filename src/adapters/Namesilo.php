@@ -92,13 +92,39 @@ class Namesilo extends BaseAdapter {
     public function raw(string $op, array $params=[]): array {
         [$code,$body,$err] = $this->request($op, $params);
 
-        $endpointQuery = $this->query($params);
-        if (array_key_exists('key', $endpointQuery)) {
-            $endpointQuery['key'] = '***';
-        }
-
+        $endpointQuery = $this->redactQuery($this->query($params));
         $endpoint = $this->base . '/' . $op . '?' . http_build_query($endpointQuery);
 
         return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err, 'endpoint'=>$endpoint];
+    }
+
+    private function redactQuery(array $query): array {
+        $sensitive = [
+            'key',
+            'api_key',
+            'api_secret',
+            'secret',
+            'token',
+            'api_token',
+            'password',
+            'auth',
+            'auth_code',
+            'epp_code',
+        ];
+
+        foreach ($query as $name => $value) {
+            $normalized = strtolower(str_replace('-', '_', (string) $name));
+
+            if (in_array($normalized, $sensitive, true)) {
+                $query[$name] = '***';
+                continue;
+            }
+
+            if (is_array($value)) {
+                $query[$name] = $this->redactQuery($value);
+            }
+        }
+
+        return $query;
     }
 }
