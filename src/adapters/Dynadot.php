@@ -221,7 +221,11 @@ class Dynadot extends BaseAdapter {
 
     private function hasDnsSelector(array $selector): bool {
         foreach (['type','host','value','prio','priority'] as $field) {
-            if (array_key_exists($field,$selector)) {
+            if (
+                array_key_exists($field,$selector)
+                && $selector[$field] !== null
+                && $selector[$field] !== ''
+            ) {
                 return true;
             }
         }
