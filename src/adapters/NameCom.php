@@ -519,7 +519,7 @@ final class NameCom extends BaseAdapter
         [$code, $data, $err] = $this->request(
             'POST',
             '/core/v1/domains/' . rawurlencode($domain) . '/vanity_nameservers',
-            ['hostname' => $hostname, 'ips' => array_values($ips)]
+            ['hostname' => $this->vanityLabel($domain, $hostname), 'ips' => array_values($ips)]
         );
 
         return $this->result($code, $data, $err);
@@ -665,6 +665,48 @@ final class NameCom extends BaseAdapter
         }
 
         return $data;
+    }
+
+    public function cancelTransfer(string $domain): array
+    {
+        [$code, $data, $err] = $this->request(
+            'POST',
+            '/core/v1/transfers/' . rawurlencode($domain) . ':cancel',
+            []
+        );
+
+        return $this->result($code, $data, $err);
+    }
+
+    public function getAccountBalance(): array
+    {
+        [$code, $data, $err] = $this->request('GET', '/core/v1/accountinfo/balance');
+
+        return $this->result($code, $data, $err) + [
+            'balance' => isset($data['balance']) ? (float) $data['balance'] : null,
+        ];
+    }
+
+    public function getDomainRequirements(string $tld): array
+    {
+        [$code, $data, $err] = $this->request(
+            'GET',
+            '/core/v1/domaininfo/requirements/' . rawurlencode(ltrim($tld, '.'))
+        );
+
+        return $this->result($code, $data, $err);
+    }
+
+    private function vanityLabel(string $domain, string $hostname): string
+    {
+        $suffix = '.' . strtolower(rtrim($domain, '.'));
+        $normalized = strtolower(rtrim($hostname, '.'));
+
+        if (str_ends_with($normalized, $suffix)) {
+            return substr($normalized, 0, -strlen($suffix));
+        }
+
+        return $hostname;
     }
 
     private function dnsMatches(array $record, array $selector): bool
