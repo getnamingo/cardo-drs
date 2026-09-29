@@ -342,13 +342,35 @@ final class OpenSRS extends BaseAdapter
     private function item(string $key, mixed $value): string
     {
         $key = htmlspecialchars($key, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+
         if (is_array($value)) {
-            $tag = array_is_list($value) ? 'dt_array' : 'dt_assoc';
-            $inner = '';
-            foreach ($value as $k => $v) $inner .= $this->item((string) $k, $v);
-            return '<item key="' . $key . '"><' . $tag . '>' . $inner . '</' . $tag . '></item>';
+            return '<item key="' . $key . '">' . $this->arrayNode($value) . '</item>';
         }
+
         return '<item key="' . $key . '">' . htmlspecialchars((string) $value, ENT_XML1 | ENT_QUOTES, 'UTF-8') . '</item>';
+    }
+
+    private function arrayNode(array $value): string
+    {
+        if (!array_is_list($value)) {
+            $inner = '';
+            foreach ($value as $key => $child) {
+                $inner .= $this->item((string) $key, $child);
+            }
+
+            return '<dt_assoc>' . $inner . '</dt_assoc>';
+        }
+
+        $inner = '';
+        foreach ($value as $index => $child) {
+            // XCP compound array entries are direct dt_assoc/dt_array children,
+            // not item wrappers around those structures.
+            $inner .= is_array($child)
+                ? $this->arrayNode($child)
+                : $this->item((string) $index, $child);
+        }
+
+        return '<dt_array>' . $inner . '</dt_array>';
     }
 
     private function parse(string $xml): array
@@ -370,16 +392,43 @@ final class OpenSRS extends BaseAdapter
     private function xmlValue(\SimpleXMLElement $item): mixed
     {
         if (isset($item->dt_assoc)) {
-            $out = [];
-            foreach ($item->dt_assoc->item as $child) $out[(string) $child['key']] = $this->xmlValue($child);
-            return $out;
+            return $this->xmlAssoc($item->dt_assoc);
         }
+
         if (isset($item->dt_array)) {
-            $out = [];
-            foreach ($item->dt_array->item as $child) $out[] = $this->xmlValue($child);
-            return $out;
+            return $this->xmlArray($item->dt_array);
         }
+
         return (string) $item;
+    }
+
+    private function xmlAssoc(\SimpleXMLElement $assoc): array
+    {
+        $out = [];
+        foreach ($assoc->item as $child) {
+            $out[(string) $child['key']] = $this->xmlValue($child);
+        }
+
+        return $out;
+    }
+
+    private function xmlArray(\SimpleXMLElement $array): array
+    {
+        $out = [];
+
+        foreach ($array->children() as $child) {
+            $name = $child->getName();
+
+            if ($name === 'item') {
+                $out[] = $this->xmlValue($child);
+            } elseif ($name === 'dt_assoc') {
+                $out[] = $this->xmlAssoc($child);
+            } elseif ($name === 'dt_array') {
+                $out[] = $this->xmlArray($child);
+            }
+        }
+
+        return $out;
     }
 
     private function contacts(array $opts): array
