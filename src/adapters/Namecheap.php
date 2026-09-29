@@ -1,7 +1,7 @@
 <?php
-namespace RegistrarAPI\adapters;
+namespace Namingo\Cardo\DRS\Adapters;
 
-use RegistrarAPI\Core\BaseAdapter;
+use Namingo\Cardo\DRS\Core\BaseAdapter;
 
 class Namecheap extends BaseAdapter
 {
