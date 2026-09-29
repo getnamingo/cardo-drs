@@ -54,8 +54,13 @@ class Dynadot extends BaseAdapter {
         return ['ok'=>$code<400&&!$err,'raw'=>json_decode($body,true),'http'=>$code,'err'=>$err];
     }
     public function delDNS(string $domain, array $selector): array {
-        if ($selector === []) {
-            return ['ok'=>false,'raw'=>[],'http'=>null,'err'=>'Dynadot DNS delete selector is empty'];
+        if (!$this->hasDnsSelector($selector)) {
+            return [
+                'ok'=>false,
+                'raw'=>[],
+                'http'=>null,
+                'err'=>'Dynadot DNS delete selector must include type, host, value, prio, or priority',
+            ];
         }
 
         $current=$this->getDNS($domain);
@@ -214,7 +219,25 @@ class Dynadot extends BaseAdapter {
         return $records;
     }
 
+    private function hasDnsSelector(array $selector): bool {
+        foreach (['type','host','value','prio','priority'] as $field) {
+            if (
+                array_key_exists($field,$selector)
+                && $selector[$field] !== null
+                && $selector[$field] !== ''
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function dnsMatches(array $record, array $selector): bool {
+        if (!$this->hasDnsSelector($selector)) {
+            return false;
+        }
+
         foreach (['type','host','value'] as $field) {
             if (!array_key_exists($field,$selector)) continue;
             $left=(string)($record[$field]??'');

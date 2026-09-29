@@ -184,6 +184,73 @@ foreach (['transferDomain', 'getDomain', 'getDNS', 'setDNS', 'addDNS', 'delDNS',
     );
 }
 
+$buildNamecheapRegistration = privateMethod($namecheap, 'buildRegistrationParams');
+$namecheapRegistration = $buildNamecheapRegistration->invoke($namecheap, 'example.test', [
+    'years' => 2,
+    'registrant' => [
+        'first_name' => 'Jane',
+        'last_name' => 'Registrant',
+        'address' => '1 Example Street',
+        'city' => 'Sofia',
+        'state' => 'Sofia',
+        'zip' => '1000',
+        'country' => 'BG',
+        'phone' => '+359.2.1234567',
+        'email' => 'registrant@example.test',
+    ],
+    'contacts' => [
+        'admin' => [
+            'email' => 'admin@example.test',
+        ],
+    ],
+]);
+
+foreach (['Registrant', 'Admin', 'Tech', 'AuxBilling'] as $prefix) {
+    foreach (['FirstName', 'LastName', 'Address1', 'City', 'StateProvince', 'PostalCode', 'Country', 'Phone', 'EmailAddress'] as $field) {
+        assertTrue(
+            isset($namecheapRegistration[$prefix . $field]) && $namecheapRegistration[$prefix . $field] !== '',
+            "Namecheap registration must supply required {$prefix}{$field}"
+        );
+    }
+}
+
+assertTrue(
+    $namecheapRegistration['AdminFirstName'] === 'Jane'
+        && $namecheapRegistration['AdminEmailAddress'] === 'admin@example.test'
+        && $namecheapRegistration['TechEmailAddress'] === 'registrant@example.test'
+        && $namecheapRegistration['AuxBillingEmailAddress'] === 'registrant@example.test',
+    'Namecheap registration contacts must inherit registrant data while allowing dedicated overrides'
+);
+
+$namecheapFailureXml = simplexml_load_string(
+    '<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">'
+    . '<CommandResponse Type="namecheap.domains.dns.setHosts">'
+    . '<DomainDNSSetHostsResult Domain="example.test" IsSuccess="false" />'
+    . '</CommandResponse></ApiResponse>'
+);
+assertTrue($namecheapFailureXml !== false, 'Namecheap failure fixture must parse');
+
+$namecheapResult = privateMethod($namecheap, 'result');
+$namecheapFailure = $namecheapResult->invoke($namecheap, 200, $namecheapFailureXml);
+assertTrue(
+    $namecheapFailure['ok'] === false && $namecheapFailure['err'] !== '',
+    'Namecheap result must report command-level IsSuccess=false as failure'
+);
+
+$namecheapSuccessXml = simplexml_load_string(
+    '<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">'
+    . '<CommandResponse Type="namecheap.domains.create">'
+    . '<DomainCreateResult Domain="example.test" Registered="true" />'
+    . '</CommandResponse></ApiResponse>'
+);
+assertTrue($namecheapSuccessXml !== false, 'Namecheap success fixture must parse');
+
+$namecheapSuccess = $namecheapResult->invoke($namecheap, 200, $namecheapSuccessXml);
+assertTrue(
+    $namecheapSuccess['ok'] === true && $namecheapSuccess['err'] === '',
+    'Namecheap result must preserve successful command-level results'
+);
+
 $dynadot = new Dynadot(['api_key' => 'test-key']);
 $extractDynadotDns = privateMethod($dynadot, 'extractDnsRecords');
 $dynadotRecords = $extractDynadotDns->invoke($dynadot, [
@@ -249,6 +316,20 @@ assertTrue(
         'priority' => 10,
     ]) === true,
     'Dynadot DNS delete matcher must support the unified selector shape'
+);
+
+assertTrue(
+    $dynadotMatches->invoke($dynadot, $dynadotRecords[1], ['record_id' => '123']) === false
+        && $dynadotMatches->invoke($dynadot, $dynadotRecords[1], ['typo' => 'MX']) === false
+        && $dynadotMatches->invoke($dynadot, $dynadotRecords[1], ['prio' => null]) === false,
+    'Dynadot DNS matcher must reject selectors with no usable supported fields'
+);
+
+$unsupportedDynadotDelete = $dynadot->delDNS('example.test', ['record_id' => '123']);
+assertTrue(
+    $unsupportedDynadotDelete['ok'] === false
+        && str_contains($unsupportedDynadotDelete['err'] ?? '', 'must include'),
+    'Dynadot delDNS must reject unsupported selectors before touching the DNS zone'
 );
 
 echo "Adapter regression tests passed.\n";
