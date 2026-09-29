@@ -226,20 +226,84 @@ final class NameCom extends BaseAdapter
             return $current;
         }
 
-        $operations = [];
+        // Reconcile as a multiset. Keep records that already exist, create all
+        // missing replacements first, and only then delete obsolete records.
+        // This avoids turning a partial create failure into a DNS outage.
+        $wantedByKey = [];
+        foreach ($records as $record) {
+            $this->dnsRecordToProvider($record); // validate/normalize before changing the zone
+            $key = $this->dnsRecordKey($record);
+            $wantedByKey[$key][] = $record;
+        }
+
+        $existingByKey = [];
         foreach ($current['records'] as $record) {
-            if (!empty($record['record_id'])) {
-                $operations[] = $this->delDNS($domain, ['record_id' => $record['record_id']]);
+            $existingByKey[$this->dnsRecordKey($record)][] = $record;
+        }
+
+        $toCreate = [];
+        foreach ($wantedByKey as $key => $wanted) {
+            $existingCount = count($existingByKey[$key] ?? []);
+            if (count($wanted) > $existingCount) {
+                $toCreate = array_merge($toCreate, array_slice($wanted, $existingCount));
             }
         }
 
-        foreach ($records as $record) {
-            $operations[] = $this->addDNS($domain, $record);
+        $toDelete = [];
+        foreach ($existingByKey as $key => $existing) {
+            $wantedCount = count($wantedByKey[$key] ?? []);
+            if (count($existing) > $wantedCount) {
+                $toDelete = array_merge($toDelete, array_slice($existing, $wantedCount));
+            }
+        }
+
+        $created = [];
+        foreach ($toCreate as $record) {
+            $result = $this->addDNS($domain, $record);
+            if (empty($result['ok'])) {
+                // Best-effort rollback of only the records created by this call.
+                $rollback = [];
+                foreach (array_reverse($created) as $createdRecord) {
+                    if (!empty($createdRecord['record_id'])) {
+                        $rollback[] = $this->delDNS($domain, ['record_id' => $createdRecord['record_id']]);
+                    }
+                }
+
+                return [
+                    'ok' => false,
+                    'err' => $result['err'] ?? 'Failed to create replacement DNS record',
+                    'created' => $created,
+                    'rollback' => $rollback,
+                    'raw' => $result,
+                ];
+            }
+            $created[] = $result;
+        }
+
+        $deleted = [];
+        foreach ($toDelete as $record) {
+            if (empty($record['record_id'])) {
+                continue;
+            }
+
+            $result = $this->delDNS($domain, ['record_id' => $record['record_id']]);
+            $deleted[] = $result;
+
+            if (empty($result['ok'])) {
+                return [
+                    'ok' => false,
+                    'err' => $result['err'] ?? 'Replacement records were created, but an obsolete DNS record could not be removed',
+                    'created' => $created,
+                    'deleted' => $deleted,
+                    'raw' => $result,
+                ];
+            }
         }
 
         return [
-            'ok' => !array_filter($operations, static fn (array $op): bool => empty($op['ok'])),
-            'raw' => $operations,
+            'ok' => true,
+            'created' => $created,
+            'deleted' => $deleted,
         ];
     }
 
@@ -715,6 +779,7 @@ final class NameCom extends BaseAdapter
             if (!array_key_exists($field, $selector)) {
                 continue;
             }
+
             $left = $field === 'type'
                 ? strtoupper((string) ($record[$field] ?? ''))
                 : (string) ($record[$field] ?? '');
@@ -727,6 +792,26 @@ final class NameCom extends BaseAdapter
             }
         }
 
+        if (array_key_exists('prio', $selector) || array_key_exists('priority', $selector)) {
+            $left = $record['prio'] ?? $record['priority'] ?? null;
+            $right = $selector['prio'] ?? $selector['priority'] ?? null;
+
+            if ((string) $left !== (string) $right) {
+                return false;
+            }
+        }
+
         return true;
+    }
+
+    private function dnsRecordKey(array $record): string
+    {
+        return implode("\0", [
+            strtoupper((string) ($record['type'] ?? '')),
+            strtolower(rtrim((string) ($record['host'] ?? '@'), '.')),
+            (string) ($record['value'] ?? $record['answer'] ?? ''),
+            (string) ((int) ($record['ttl'] ?? 300)),
+            (string) ($record['prio'] ?? $record['priority'] ?? ''),
+        ]);
     }
 }
