@@ -9,15 +9,17 @@ class Namesilo extends BaseAdapter {
     protected string $brand='namesilo';
     private string $base = 'https://www.namesilo.com/api';
 
-    private function buildUrl(string $op, array $params=[]): string {
-        $params = array_merge([
-            'version'=>'1', 'type'=>'json', 'key'=>$this->creds['api_key'] ?? ''
-        ], $params);
-        return $this->base . '/' . $op . '?' . http_build_query($params);
+    private function request(string $op, array $params=[]): array {
+        return Http::request('GET', $this->base . '/' . $op, [
+            'query' => array_merge([
+                'version' => '1',
+                'type' => 'json',
+                'key' => $this->creds['api_key'] ?? '',
+            ], $params),
+        ]);
     }
     public function checkAvailability(array $domains): array {
-        $url = $this->buildUrl('checkRegisterAvailability', ['domains'=>implode(',', $domains)]);
-        [$code,$body,$err] = Http::get($url);
+        [$code,$body,$err] = $this->request('checkRegisterAvailability', ['domains'=>implode(',', $domains)]);
         $j = $this->json($body);
         $r = $j['reply'] ?? [];
         $toArr = fn($v)=>is_array($v)?array_values($v):($v?[$v]:[]);
@@ -36,28 +38,23 @@ class Namesilo extends BaseAdapter {
         foreach (['fn'=>'first_name','ln'=>'last_name','ad'=>'address','cy'=>'city','st'=>'state','zp'=>'zip','ct'=>'country','em'=>'email','ph'=>'phone'] as $short=>$key) {
             if (isset($opts['registrant'][$key])) $params["rr_$short"] = $opts['registrant'][$key];
         }
-        $url = $this->buildUrl('registerDomain', $params);
-        [$code,$body,$err] = Http::get($url);
+        [$code,$body,$err] = $this->request('registerDomain', $params);
         return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err];
     }
     public function renewDomain(string $domain, int $years=1, array $opts=[]): array {
-        $url = $this->buildUrl('renewDomain', ['domain'=>$domain,'years'=>$years]);
-        [$code,$body,$err] = Http::get($url);
+        [$code,$body,$err] = $this->request('renewDomain', ['domain'=>$domain,'years'=>$years]);
         return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err];
     }
     public function transferDomain(string $domain, array $opts): array {
-        $url = $this->buildUrl('transferDomain', ['domain'=>$domain,'auth'=>$opts['auth_code'] ?? '']);
-        [$code,$body,$err] = Http::get($url);
+        [$code,$body,$err] = $this->request('transferDomain', ['domain'=>$domain,'auth'=>$opts['auth_code'] ?? '']);
         return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err];
     }
     public function getDomain(string $domain): array {
-        $url = $this->buildUrl('getDomainInfo', ['domain'=>$domain]);
-        [$code,$body,$err] = Http::get($url);
+        [$code,$body,$err] = $this->request('getDomainInfo', ['domain'=>$domain]);
         return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err];
     }
     public function getDNS(string $domain): array {
-        $url = $this->buildUrl('dnsListRecords', ['domain'=>$domain]);
-        [$code,$body,$err] = Http::get($url);
+        [$code,$body,$err] = $this->request('dnsListRecords', ['domain'=>$domain]);
         $j = $this->json($body);
         $recs=[];
         foreach (($j['reply']['resource_record'] ?? []) as $r) {
@@ -77,23 +74,19 @@ class Namesilo extends BaseAdapter {
     public function addDNS(string $domain, array $record): array {
         $q = ['domain'=>$domain,'rrtype'=>$record['type'],'rrhost'=>$record['host'],'rrvalue'=>$record['value'],'rrttl'=>$record['ttl'] ?? 3600];
         if (isset($record['prio'])) $q['rrdistance']=(int)$record['prio'];
-        $url = $this->buildUrl('dnsAddRecord', $q);
-        [$code,$body,$err] = Http::get($url);
+        [$code,$body,$err] = $this->request('dnsAddRecord', $q);
         return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err];
     }
     public function delDNS(string $domain, array $selector): array {
-        $url = $this->buildUrl('dnsDeleteRecord', ['domain'=>$domain,'rrid'=>$selector['record_id'] ?? '']);
-        [$code,$body,$err] = Http::get($url);
+        [$code,$body,$err] = $this->request('dnsDeleteRecord', ['domain'=>$domain,'rrid'=>$selector['record_id'] ?? '']);
         return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err];
     }
     public function setNameServers(string $domain, array $nameservers): array {
-        $url = $this->buildUrl('changeNameServers', ['domain'=>$domain,'ns'=>implode(',', $nameservers)]);
-        [$code,$body,$err] = Http::get($url);
+        [$code,$body,$err] = $this->request('changeNameServers', ['domain'=>$domain,'ns'=>implode(',', $nameservers)]);
         return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err];
     }
     public function raw(string $op, array $params=[]): array {
-        $url = $this->buildUrl($op, $params);
-        [$code,$body,$err] = Http::get($url);
-        return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err, 'endpoint'=>$url];
+        [$code,$body,$err] = $this->request($op, $params);
+        return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err, 'endpoint'=>$this->base . '/' . $op];
     }
 }
