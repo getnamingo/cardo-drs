@@ -61,18 +61,38 @@ class Namesilo extends BaseAdapter {
         [$code,$body,$err] = $this->request('dnsListRecords', ['domain'=>$domain]);
         $j = $this->json($body);
         $recs=[];
-        foreach (($j['reply']['resource_record'] ?? []) as $r) {
-            $recs[] = (new DnsRecord($r['type'],$r['host'],$r['value'], (int)($r['ttl']??3600), isset($r['distance'])?(int)$r['distance']:null))->toArray();
+        $rows=$j['reply']['resource_record'] ?? [];
+        if (isset($rows['type'])) {
+            $rows=[$rows];
+        }
+        foreach ($rows as $r) {
+            if (is_array($r)) {
+                $recs[] = $this->normalizeDnsRecord($r);
+            }
         }
         return ['ok'=>$code<400 && !$err, 'records'=>$recs, 'raw'=>$j, 'http'=>$code, 'err'=>$err];
     }
     public function setDNS(string $domain, array $records): array {
         $cur = $this->getDNS($domain);
-        if (!empty($cur['records'])) {
-            foreach ($cur['records'] as $r) { $this->delDNS($domain, ['record_id'=>$r['record_id'] ?? null]); }
+        if (empty($cur['ok'])) {
+            return $cur;
         }
-        $ok=true; $raw=[];
-        foreach ($records as $r) { $res=$this->addDNS($domain, $r); $ok=$ok && !empty($res['ok']); $raw[]=$res; }
+
+        $raw=[];
+        foreach ($cur['records'] ?? [] as $r) {
+            $res=$this->delDNS($domain, ['record_id'=>$r['record_id'] ?? null]);
+            $raw[]=$res;
+            if (empty($res['ok'])) {
+                return ['ok'=>false,'raw'=>$raw,'err'=>$res['err'] ?? 'Failed to delete existing NameSilo DNS record'];
+            }
+        }
+
+        $ok=true;
+        foreach ($records as $r) {
+            $res=$this->addDNS($domain, $r);
+            $ok=$ok && !empty($res['ok']);
+            $raw[]=$res;
+        }
         return ['ok'=>$ok,'raw'=>$raw];
     }
     public function addDNS(string $domain, array $record): array {
@@ -82,7 +102,12 @@ class Namesilo extends BaseAdapter {
         return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err];
     }
     public function delDNS(string $domain, array $selector): array {
-        [$code,$body,$err] = $this->request('dnsDeleteRecord', ['domain'=>$domain,'rrid'=>$selector['record_id'] ?? '']);
+        $recordId=(string)($selector['record_id'] ?? '');
+        if ($recordId==='') {
+            return ['ok'=>false,'raw'=>[],'http'=>null,'err'=>'NameSilo DNS delete requires record_id'];
+        }
+
+        [$code,$body,$err] = $this->request('dnsDeleteRecord', ['domain'=>$domain,'rrid'=>$recordId]);
         return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err];
     }
     public function setNameServers(string $domain, array $nameservers): array {
@@ -96,6 +121,22 @@ class Namesilo extends BaseAdapter {
         $endpoint = $this->base . '/' . $op . '?' . http_build_query($endpointQuery);
 
         return ['ok'=>$code<400 && !$err, 'raw'=>$this->json($body), 'http'=>$code, 'err'=>$err, 'endpoint'=>$endpoint];
+    }
+
+    private function normalizeDnsRecord(array $r): array {
+        $record=(new DnsRecord(
+            (string)$r['type'],
+            (string)$r['host'],
+            (string)$r['value'],
+            (int)($r['ttl']??3600),
+            isset($r['distance'])?(int)$r['distance']:null
+        ))->toArray();
+
+        if (isset($r['record_id'])) {
+            $record['record_id']=(string)$r['record_id'];
+        }
+
+        return $record;
     }
 
     private function redactQuery(array $query): array {
