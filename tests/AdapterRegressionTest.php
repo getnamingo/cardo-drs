@@ -320,8 +320,9 @@ assertTrue(
 
 assertTrue(
     $dynadotMatches->invoke($dynadot, $dynadotRecords[1], ['record_id' => '123']) === false
-        && $dynadotMatches->invoke($dynadot, $dynadotRecords[1], ['typo' => 'MX']) === false,
-    'Dynadot DNS matcher must reject selectors with no supported fields'
+        && $dynadotMatches->invoke($dynadot, $dynadotRecords[1], ['typo' => 'MX']) === false
+        && $dynadotMatches->invoke($dynadot, $dynadotRecords[1], ['prio' => null]) === false,
+    'Dynadot DNS matcher must reject selectors with no usable supported fields'
 );
 
 $unsupportedDynadotDelete = $dynadot->delDNS('example.test', ['record_id' => '123']);
