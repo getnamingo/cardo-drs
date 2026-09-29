@@ -1,7 +1,7 @@
 <?php
 namespace RegistrarAPI;
 
-use RegistrarAPI\Core\BaseAdapter;
+use Namingo\Cardo\DRS\Core\BaseAdapter;
 
 final class RegistrarAPI
 {
@@ -23,7 +23,7 @@ final class RegistrarAPI
         $studly   = self::ALIAS[$brandKey] ?? self::studly($brand);
 
         // Try both namespace casings + with/without "Adapter" suffix
-        $namespaces = ['\\RegistrarAPI\\Adapters\\', '\\RegistrarAPI\\adapters\\'];
+        $namespaces = ['\\Namingo\\Cardo\\DRS\\Adapters\\', '\\Namingo\\Cardo\\DRS\\Adapters\\'];
         $candidates = [];
         foreach ($namespaces as $ns) {
             $candidates[] = $ns . $studly;              // e.g. \...Adapters\Cloudflare
