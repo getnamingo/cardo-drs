@@ -162,7 +162,7 @@ class Namecheap extends BaseAdapter
         }
         if (array_key_exists('privacy', $opts)) {
             $params['AddFreeWhoisguard'] = $opts['privacy'] ? 'yes' : 'no';
-            $params['WGEnabled'] = $opts['privacy'] ? 'yes' : 'no';
+            $params['WGenable'] = $opts['privacy'] ? 'yes' : 'no';
         }
 
         [$code, $res] = $this->request('namecheap.domains.transfer.create', $params);
