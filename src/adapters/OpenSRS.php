@@ -63,7 +63,7 @@ final class OpenSRS extends BaseAdapter
             'auto_renew' => !empty($opts['auto_renew']) ? 1 : 0,
         ];
         if ($nameservers !== []) $attrs['nameserver_list'] = $this->nameservers($nameservers);
-        if (isset($opts['purchase_price'])) $attrs['premium_price_to_display'] = (float) $opts['purchase_price'];
+        if (isset($opts['purchase_price'])) $attrs['premium_price_to_verify'] = (float) $opts['purchase_price'];
 
         return $this->result($this->call('DOMAIN', 'SW_REGISTER', $attrs));
     }
@@ -100,7 +100,7 @@ final class OpenSRS extends BaseAdapter
             'handle' => (string) ($opts['handle'] ?? 'process'),
             'auth_info' => (string) ($opts['auth_code'] ?? $opts['authCode'] ?? ''),
         ];
-        if (isset($opts['purchase_price'])) $attrs['premium_price_to_display'] = (float) $opts['purchase_price'];
+        if (isset($opts['purchase_price'])) $attrs['premium_price_to_verify'] = (float) $opts['purchase_price'];
 
         return $this->result($this->call('DOMAIN', 'SW_REGISTER', $attrs));
     }
