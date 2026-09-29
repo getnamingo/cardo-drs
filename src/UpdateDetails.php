@@ -1,6 +1,6 @@
 <?php
 
-namespace Namingo\Registrars;
+namespace Namingo\Cardo\DRS;
 
 final class UpdateDetails
 {
