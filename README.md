@@ -57,8 +57,6 @@ Registrar adapters require provider-specific API credentials. Pass the required 
 | **Name.com** |
 | **OpenSRS** |
 
-Name.com and OpenSRS implement the common Cardo DRS lifecycle and DNS methods. They also expose provider-specific helpers for features such as pricing, transfer status, authorization codes, auto-renewal, DNSSEC or glue/vanity nameservers where the provider supports them.
-
 ## Credentials per Adapter
 
 Each adapter accepts a config array. The keys below are the **minimum** you usually need.
