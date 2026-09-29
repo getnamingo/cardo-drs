@@ -1,5 +1,5 @@
 <?php
-namespace RegistrarAPI\Adapters;
+namespace Namingo\Cardo\DRS\Adapters;
 
 use GuzzleHttp\Client;
 

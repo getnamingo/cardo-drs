@@ -1,5 +1,5 @@
 <?php
-namespace RegistrarAPI\Core;
+namespace Namingo\Cardo\DRS\Core;
 
 final class Http {
     public static function get(string $url, array $headers=[], int $timeout=20): array {
