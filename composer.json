@@ -1,29 +1,34 @@
 {
-  "name": "namingo/registrars",
-  "description": "Cardo DRS - a unified PHP interface for working with multiple domain registrar APIs.",
-  "homepage": "https://github.com/getnamingo/cardo-drs",
+  "name": "namingo/cardo-drs",
+  "description": "Unified PHP Registrar API (NameSilo, GoDaddy, Namecheap, Dynadot) with pluggable adapters.",
   "type": "library",
-  "keywords": ["php", "domains", "registrar", "domain-registration", "api", "cardo", "drs"],
   "license": "MIT",
-  "authors": [
-    {
-      "name": "Taras Kondratyuk",
-      "email": "help@namingo.org"
-    }
-  ],
+  "keywords": ["domain", "registrar", "api", "namesilo", "godaddy", "namecheap", "dynadot"],
+  "homepage": "https://github.com/getnamingo/cardo-drs",
+  "support": {
+    "issues": "https://github.com/getnamingo/cardo-drs/issues",
+    "source": "https://github.com/getnamingo/cardo-drs"
+  },
   "autoload": {
     "psr-4": {
-      "Namingo\\Cardo\\DRS\\": "src/"
+      "Namingo\\Cardo\\DRS\\": "src/",
+      "Namingo\\Cardo\\DRS\\Adapters\\": "src/adapters/"
+    }
+  },
+  "authors": [
+    {
+      "name": "josuamarcelc",
+      "email": "me@josuamarcelc.com"
     },
-    "files": [
-      "src/compat.php"
-    ]
-  },
+    {
+      "name": "Terbora Ltd",
+      "email": "hello@terbora.com",
+      "role": "Maintainer"
+    }
+  ],
   "require": {
-    "php": ">=8.3",
-    "utopia-php/validators": "0.*"
+    "php": ">=8.3"
   },
-  "scripts": {
-    "test": "php tests/CompatibilityTest.php"
-  }
+  "minimum-stability": "stable",
+  "prefer-stable": true
 }
