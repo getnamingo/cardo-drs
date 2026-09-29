@@ -1,5 +1,5 @@
 <?php
-namespace RegistrarAPI;
+namespace Namingo\\Cardo\\DRS;
 
 use Namingo\Cardo\DRS\Core\BaseAdapter;
 
