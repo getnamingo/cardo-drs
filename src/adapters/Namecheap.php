@@ -2,6 +2,7 @@
 namespace Namingo\Cardo\DRS\Adapters;
 
 use Namingo\Cardo\DRS\Core\BaseAdapter;
+use Namingo\Cardo\DRS\Core\Http;
 
 class Namecheap extends BaseAdapter
 {
@@ -28,10 +29,19 @@ class Namecheap extends BaseAdapter
             'Command'   => $command
         ], $params);
 
-        $url = $this->endpoint . '?' . http_build_query($query);
-        $response = $this->http->get($url);
+        [$code, $body, $err] = Http::request('GET', $this->endpoint, [
+            'query' => $query,
+        ]);
 
-        return $this->parseResponse($response);
+        if ($err !== '') {
+            throw new \RuntimeException('Namecheap transport error: ' . $err);
+        }
+
+        if ($code >= 400) {
+            throw new \RuntimeException('Namecheap HTTP error: ' . $code);
+        }
+
+        return $this->parseResponse($body);
     }
 
     protected function parseResponse($xml)
