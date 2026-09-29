@@ -317,18 +317,18 @@ class Namecheap extends BaseAdapter
     private function buildRegistrationParams(string $domain, array $opts): array
     {
         $contacts = (array) ($opts['contacts'] ?? []);
-        $registrant = (array) ($opts['registrant'] ?? $contacts['registrant'] ?? []);
-        $admin = array_replace($registrant, (array) ($contacts['admin'] ?? $opts['admin'] ?? []));
-        $tech = array_replace($registrant, (array) ($contacts['tech'] ?? $opts['tech'] ?? []));
+        $registrant = $this->normalizeContact((array) ($opts['registrant'] ?? $contacts['registrant'] ?? []));
+        $admin = array_replace($registrant, $this->normalizeContact((array) ($contacts['admin'] ?? $opts['admin'] ?? [])));
+        $tech = array_replace($registrant, $this->normalizeContact((array) ($contacts['tech'] ?? $opts['tech'] ?? [])));
         $billing = array_replace(
             $registrant,
-            (array) (
+            $this->normalizeContact((array) (
                 $contacts['billing']
                 ?? $contacts['aux_billing']
                 ?? $opts['billing']
                 ?? $opts['aux_billing']
                 ?? []
-            )
+            ))
         );
 
         $params = array_merge(
@@ -351,6 +351,35 @@ class Namecheap extends BaseAdapter
         }
 
         return $params;
+    }
+
+    private function normalizeContact(array $contact): array
+    {
+        foreach ([
+            'first_name' => ['firstname', 'firstName'],
+            'last_name' => ['lastname', 'lastName'],
+            'address1' => ['address'],
+            'state' => ['province', 'state_province'],
+            'postal_code' => ['postalcode', 'zip'],
+            'email' => ['email_address'],
+            'organization' => ['organization_name', 'org', 'company'],
+            'phone_ext' => ['phone_extension'],
+        ] as $canonical => $aliases) {
+            if (!isset($contact[$canonical])) {
+                foreach ($aliases as $alias) {
+                    if (isset($contact[$alias])) {
+                        $contact[$canonical] = $contact[$alias];
+                        break;
+                    }
+                }
+            }
+
+            foreach ($aliases as $alias) {
+                unset($contact[$alias]);
+            }
+        }
+
+        return $contact;
     }
 
     private function buildContactParams(string $prefix, array $contact, array $opts): array
