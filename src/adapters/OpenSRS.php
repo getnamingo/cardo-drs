@@ -143,7 +143,7 @@ final class OpenSRS extends BaseAdapter
                 }
             }
         }
-        return $out + ['records' => $records];
+        return $out + ['records' => $records, 'nameservers_ok' => isset($r['attributes']['nameservers_ok']) ? ((string) $r['attributes']['nameservers_ok'] === '1') : null];
     }
 
     public function setDNS(string $domain, array $records): array
@@ -155,7 +155,7 @@ final class OpenSRS extends BaseAdapter
             if ($converted === null) return ['ok' => false, 'err' => 'Unsupported DNS type: ' . $type, 'raw' => $record];
             $grouped[$type][] = $converted;
         }
-        return $this->result($this->call('DOMAIN', 'SET_DNS_ZONE', ['domain' => $domain, 'records' => $grouped]));
+        return $this->result($this->call('DOMAIN', 'SET_DNS_ZONE', ['domain' => $domain, 'nameservers_ok' => 1, 'records' => $grouped]));
     }
 
     public function addDNS(string $domain, array $record): array
