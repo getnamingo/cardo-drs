@@ -1,30 +1,19 @@
-# Registrar API
+# Cardo DRS - Multi-Registrar Domain Management Library
 
-A unified PHP library for managing domains across multiple registrars with a **single, consistent API**. Current adapters:
+Cardo DRS is a unified PHP interface for working with multiple domain registrar APIs through a **single, consistent API**.
 
-- NameSilo
-- GoDaddy
-- Namecheap
-- Dynadot
-- ....
-  
-Provides a consistent interface for common operations like domain availability checks, registration, renewal, transfer, and DNS record management.  
-Easily extendable via adapter classes to support additional registrars with minimal code changes.
+It provides a common abstraction for domain registration and management operations, reducing the need to implement separate integration logic for every registrar. Applications can use the same interface for common tasks such as checking domain availability, registering and renewing domains, managing transfers, nameservers, and DNS records.
 
+Cardo DRS uses a pluggable adapter architecture, making it straightforward to add support for additional registrars while keeping application code independent from provider-specific APIs.
 
-> Drop-in architecture: add your own registrar by creating one class in `src/adapters/`.
+[![StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://github.com/vshymanskyy/StandWithUkraine/blob/main/docs/README.md)
 
----
-
-## Requirements
-- PHP **7.4+** (8.x recommended)
-- cURL extension
-- Composer
+[![SWUbanner](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://github.com/vshymanskyy/StandWithUkraine/blob/main/docs/README.md)
 
 ## Installation
 
 ```bash
-composer require josuamarcelc/registrar-api
+composer require namingo/cardo-drs
 ```
 
 If you’re developing locally from the repo, ensure PSR‑4 autoloading is refreshed:
@@ -55,7 +44,16 @@ print_r($result);
 $api->setNameServers('example.com', ['ns1.host.com', 'ns2.host.com']);
 ```
 
----
+## Supported Providers
+
+Most DNS providers **require an API key**, while some may need **additional settings** such as authentication credentials or specific server configurations. All required values must be set in the `.env` file.
+
+| Provider    |
+|------------|
+| **NameSilo** |
+| **GoDaddy** |
+| **Namecheap** |
+| **Dynadot** |
 
 ## Credentials per Adapter
 
@@ -399,11 +397,26 @@ Manage Cloudflare **zones, DNS, cache**, and **free features** from the same API
 
 ➡️ See the full guide: [docs/cloudflare.md](docs/cloudflare.md)
 
----
+## Support
 
-## License
-MIT ©  [josuamarcelc]
+Need help, found a bug, or have an idea for Cardo DRS?
 
+- **Email:** [help@namingo.org](mailto:help@namingo.org)
+- **Discord:** Join the community on [Discord](https://discord.gg/97R9VCrWgc)
+- **GitHub Issues:** Report bugs or request features in [GitHub Issues](https://github.com/getnamingo/cardo-drs/issues)
 
-[josuamarcelc]: <https://josuamarcelc.com/>
+Questions, feedback, and contributions are always welcome.
 
+## Support This Project
+
+If you find Cardo DRS useful, consider donating:
+
+- [Donate via Stripe](https://donate.stripe.com/7sI2aI4jV3Offn28ww)
+- BTC: `bc1q9jhxjlnzv0x4wzxfp8xzc6w289ewggtds54uqa`
+- ETH: `0x330c1b148368EE4B8756B176f1766d52132f0Ea8`
+
+## Licensing
+
+Cardo DRS is licensed under the MIT License.
+
+Cardo DRS is based on [josuamarcelc/registrar-api](https://github.com/josuamarcelc/registrar-api), originally created by [josuamarcelc](https://josuamarcelc.com/), and is further developed and maintained by Terbora Ltd.
