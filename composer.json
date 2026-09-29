@@ -43,5 +43,8 @@
     "ext-simplexml": "*"
   },
   "minimum-stability": "stable",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "scripts": {
+    "test": "php tests/AdapterRegressionTest.php"
+  }
 }
