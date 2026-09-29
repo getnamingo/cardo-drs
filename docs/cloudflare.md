@@ -1,6 +1,6 @@
 # Cloudflare Adapter (for Registrar API)
 
-Cloudflare support for the **Registrar API** project, implemented as `RegistrarAPI\Adapters\CloudflareAdapter` (file: `src/adapters/CloudflareAdapter.php`).
+Cloudflare support for the **Registrar API** project, implemented as `Namingo\Cardo\DRS\Adapters\CloudflareAdapter` (file: `src/adapters/CloudflareAdapter.php`).
 
 Use it to:
 - **Create zones** (add a domain to your Cloudflare account)
@@ -25,7 +25,7 @@ Use it to:
 ## Quick Start
 
 ```php
-use RegistrarAPI\RegistrarAPI;
+use Namingo\Cardo\DRS\RegistrarAPI;
 
 // 1) Build the Cloudflare client
 $cf = RegistrarAPI::make('cloudflare', [
