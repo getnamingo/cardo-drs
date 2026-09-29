@@ -15,6 +15,11 @@ final class RegistrarAPI
         'godaddy'   => 'GoDaddy',
         'namecheap'  => 'Namecheap',
         'dynadot'  => 'Dynadot',
+        'name.com'  => 'NameCom',
+        'namecom'   => 'NameCom',
+        'name-com'  => 'NameCom',
+        'opensrs'   => 'OpenSRS',
+        'open-srs'  => 'OpenSRS',
     ];
 
     public static function make(string $brand, array $creds): BaseAdapter
