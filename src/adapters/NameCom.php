@@ -104,7 +104,7 @@ final class NameCom extends BaseAdapter
         [$code, $data, $err] = $this->request('POST', '/core/v1/domains', [
             'domain' => $domainData,
             'years' => (int) ($opts['years'] ?? 1),
-            ...isset($opts['purchase_price']) ? ['purchasePrice' => (float) $opts['purchase_price']] : [],
+            ...(isset($opts['purchase_price']) ? ['purchasePrice' => (float) $opts['purchase_price']] : []),
         ]);
 
         $result = $this->result($code, $data, $err);
