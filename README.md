@@ -31,7 +31,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Namingo\Cardo\DRS\RegistrarAPI;
 
 // Pick your registrar by brand string (case-insensitive):
-// 'namesilo', 'godaddy', 'namecheap', 'dynadot'
+// 'namesilo', 'godaddy', 'namecheap', 'dynadot', 'namecom', 'opensrs'
 $api = RegistrarAPI::make('namesilo', [
     'api_key' => 'YOUR_NAMESILO_API_KEY'
 ]);
@@ -54,6 +54,8 @@ Most DNS providers **require an API key**, while some may need **additional sett
 | **GoDaddy** |
 | **Namecheap** |
 | **Dynadot** |
+| **Name.com** |
+| **OpenSRS** |
 
 ## Credentials per Adapter
 
@@ -90,6 +92,25 @@ $api = RegistrarAPI::make('namecheap', [
 $api = RegistrarAPI::make('dynadot', [
   'api_key' => 'KEY',
   // optional: 'base' => 'https://api.dynadot.com/api3.json'
+]);
+```
+
+### Name.com
+```php
+$api = RegistrarAPI::make('namecom', [
+  'username' => 'USERNAME',
+  'token' => 'API_TOKEN',
+  // optional: 'base' => 'https://api.dev.name.com' for testing
+]);
+```
+
+### OpenSRS
+```php
+$api = RegistrarAPI::make('opensrs', [
+  'api_key' => 'API_KEY',
+  'username' => 'RESELLER_USERNAME',
+  'password' => 'REGISTRATION_PASSWORD',
+  // optional: 'endpoint' => 'https://horizon.opensrs.net:55443'
 ]);
 ```
 
@@ -420,3 +441,5 @@ If you find Cardo DRS useful, consider donating:
 Cardo DRS is licensed under the MIT License.
 
 Cardo DRS is based on [josuamarcelc/registrar-api](https://github.com/josuamarcelc/registrar-api), originally created by [josuamarcelc](https://josuamarcelc.com/), and is further developed and maintained by Terbora Ltd.
+
+The Name.com and OpenSRS integrations are also based in part on the MIT-licensed registrar adapters from [utopia-php/domains](https://github.com/utopia-php/domains), with adaptations and additional Cardo DRS functionality.
