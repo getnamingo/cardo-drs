@@ -39,7 +39,7 @@
   ],
   "require": {
     "php": ">=8.3",
-    "ext-curl": "*",
+    "guzzlehttp/guzzle": "^7.10",
     "ext-simplexml": "*"
   },
   "minimum-stability": "stable",

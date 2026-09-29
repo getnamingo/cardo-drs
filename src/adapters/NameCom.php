@@ -632,27 +632,25 @@ final class NameCom extends BaseAdapter
 
     private function request(string $method, string $path, ?array $body = null): array
     {
-        $url = $this->base . $path;
-        $headers = [
-            'Authorization: Basic ' . base64_encode($this->username . ':' . $this->token),
-            'Accept: application/json',
+        $options = [
+            'auth' => [$this->username, $this->token],
+            'headers' => ['Accept' => 'application/json'],
         ];
 
-        [$code, $response, $err] = match ($method) {
-            'POST' => Http::postJson($url, $body ?? [], $headers),
-            'PUT' => Http::putJson($url, $body ?? [], $headers),
-            'PATCH' => Http::patchJson($url, $body ?? [], $headers),
-            'DELETE' => Http::delete($url, $headers),
-            default => Http::get($url, $headers),
-        };
-
-        $data = [];
-        if (is_string($response) && $response !== '') {
-            $decoded = json_decode($response, true);
-            $data = is_array($decoded) ? $decoded : ['_raw' => $response];
+        if ($body !== null && in_array($method, ['POST', 'PUT', 'PATCH'], true)) {
+            $options['json'] = $body;
         }
 
-        return [(int) $code, $data, (string) $err];
+        [$code, $response, $err] = Http::request(
+            $method,
+            $this->base . $path,
+            $options
+        );
+
+        $decoded = $response !== '' ? json_decode($response, true) : [];
+        $data = is_array($decoded) ? $decoded : ($response !== '' ? ['_raw' => $response] : []);
+
+        return [$code, $data, $err];
     }
 
     private function result(int $code, array $data, string $err): array

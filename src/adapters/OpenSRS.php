@@ -291,11 +291,14 @@ final class OpenSRS extends BaseAdapter
         $xml = $this->envelope($object, $action, $attributes, $domain);
         $signature = md5(md5($xml . $this->apiKey) . $this->apiKey);
 
-        [$http, $body, $err] = Http::postRaw($this->endpoint, $xml, [
-            'Content-Type: text/xml',
-            'X-Username: ' . $this->username,
-            'X-Signature: ' . $signature,
-            'Accept: text/xml',
+        [$http, $body, $err] = Http::request('POST', $this->endpoint, [
+            'headers' => [
+                'Content-Type' => 'text/xml',
+                'X-Username' => $this->username,
+                'X-Signature' => $signature,
+                'Accept' => 'text/xml',
+            ],
+            'body' => $xml,
         ], 60);
 
         if ($err !== '') return ['_transport_ok' => false, '_http' => $http, '_error' => $err, '_raw_xml' => (string) $body];
