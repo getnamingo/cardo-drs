@@ -15,6 +15,7 @@ final class Http
         int $timeout = 30
     ): array {
         $options['http_errors'] = false;
+        $options['allow_redirects'] ??= false;
         $options['timeout'] ??= $timeout;
         $options['connect_timeout'] ??= $timeout;
 
