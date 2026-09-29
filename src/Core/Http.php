@@ -16,6 +16,13 @@ final class Http {
         $headers[] = 'Content-Type: application/json';
         return self::req('PUT', $url, json_encode($json), $headers, $timeout);
     }
+    public static function patchJson(string $url, array $json, array $headers=[], int $timeout=30): array {
+        $headers[] = 'Content-Type: application/json';
+        return self::req('PATCH', $url, json_encode($json), $headers, $timeout);
+    }
+    public static function postRaw(string $url, string $body, array $headers=[], int $timeout=30): array {
+        return self::req('POST', $url, $body, $headers, $timeout);
+    }
     public static function postForm(string $url, array $form, array $headers=[], int $timeout=30): array {
         $headers[] = 'Content-Type: application/x-www-form-urlencoded';
         return self::req('POST', $url, http_build_query($form), $headers, $timeout);

@@ -3,7 +3,18 @@
   "description": "Cardo DRS - a unified PHP interface for working with multiple domain registrar APIs.",
   "type": "library",
   "license": "MIT",
-  "keywords": ["domain", "registrar", "api", "namesilo", "godaddy", "namecheap", "dynadot"],
+  "keywords": [
+    "domain",
+    "registrar",
+    "api",
+    "namesilo",
+    "godaddy",
+    "namecheap",
+    "dynadot",
+    "name.com",
+    "namecom",
+    "opensrs"
+  ],
   "homepage": "https://github.com/getnamingo/cardo-drs",
   "support": {
     "issues": "https://github.com/getnamingo/cardo-drs/issues",
@@ -27,7 +38,9 @@
     }
   ],
   "require": {
-    "php": ">=8.3"
+    "php": ">=8.3",
+    "ext-curl": "*",
+    "ext-simplexml": "*"
   },
   "minimum-stability": "stable",
   "prefer-stable": true
