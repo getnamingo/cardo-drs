@@ -318,14 +318,17 @@ class Namecheap extends BaseAdapter
     {
         $contacts = (array) ($opts['contacts'] ?? []);
         $registrant = (array) ($opts['registrant'] ?? $contacts['registrant'] ?? []);
-        $admin = (array) ($contacts['admin'] ?? $opts['admin'] ?? $registrant);
-        $tech = (array) ($contacts['tech'] ?? $opts['tech'] ?? $registrant);
-        $billing = (array) (
-            $contacts['billing']
-            ?? $contacts['aux_billing']
-            ?? $opts['billing']
-            ?? $opts['aux_billing']
-            ?? $registrant
+        $admin = array_replace($registrant, (array) ($contacts['admin'] ?? $opts['admin'] ?? []));
+        $tech = array_replace($registrant, (array) ($contacts['tech'] ?? $opts['tech'] ?? []));
+        $billing = array_replace(
+            $registrant,
+            (array) (
+                $contacts['billing']
+                ?? $contacts['aux_billing']
+                ?? $opts['billing']
+                ?? $opts['aux_billing']
+                ?? []
+            )
         );
 
         $params = array_merge(
@@ -470,7 +473,7 @@ class Namecheap extends BaseAdapter
 
     private function commandSuccess(\SimpleXMLElement $res): bool
     {
-        $nodes = $res->xpath('/ApiResponse/CommandResponse/*');
+        $nodes = $res->xpath('/*[local-name()="ApiResponse"]/*[local-name()="CommandResponse"]/*');
         if ($nodes === false || $nodes === []) {
             return true;
         }
