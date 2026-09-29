@@ -1,8 +1,8 @@
-# Namingo Registrars
+# Cardo DRS
 
 A unified PHP library for working with multiple domain registrars through one consistent API.
 
-Namingo Registrars provides a common interface for domain availability checks, registrations, renewals, transfers, domain management, and other registrar operations. Applications can work with different registrar providers without implementing each provider API separately.
+Cardo DRS provides a common interface for domain availability checks, registrations, renewals, transfers, domain management, and other registrar operations. Applications can work with different registrar providers without implementing each provider API separately.
 
 ## Features
 
@@ -305,7 +305,7 @@ Do not expose registrar credentials, API responses containing private data, or i
 
 ## Creating an adapter
 
-Registrar integrations are implemented as adapters. A new adapter should implement the library's registrar adapter contract and translate the common Namingo Registrars operations into requests supported by the upstream provider.
+Registrar integrations are implemented as adapters. A new adapter should implement the library's registrar adapter contract and translate the common Cardo DRS operations into requests supported by the upstream provider.
 
 An adapter is responsible for:
 
@@ -313,7 +313,7 @@ An adapter is responsible for:
 - API request construction
 - Provider-specific response parsing
 - Error normalization
-- Mapping provider data to Namingo Registrars objects
+- Mapping provider data to Cardo DRS objects
 - Distinguishing test and production environments
 
 Provider-specific behavior should remain inside the adapter so applications can continue using the same public interface.
@@ -358,22 +358,22 @@ REGISTRAR_API_URL=
 
 ## Project status
 
-Namingo Registrars is under active development.
+Cardo DRS is under active development.
 
 Interfaces and adapter behavior may change before the first stable release. Test registrar operations carefully before using the library with production accounts.
 
 ## Acknowledgements
 
-Namingo Registrars is based on the registrar API implementation from the [Utopia Domains](https://github.com/utopia-php/domains) project.
+Cardo DRS is based on the registrar API implementation from the [Utopia Domains](https://github.com/utopia-php/domains) project.
 
 Original project authors: Eldad Fux and Wess Cope.
 
 The original software is distributed under the MIT License.
 
-Namingo Registrars contains modifications, namespace changes, additional integrations, and continued development maintained by the Namingo project.
+Cardo DRS contains modifications, namespace changes, additional integrations, and continued development maintained by the Namingo project.
 
 ## License
 
-Namingo Registrars is distributed under the MIT License.
+Cardo DRS is distributed under the MIT License.
 
 This project includes software derived from Utopia Domains.
