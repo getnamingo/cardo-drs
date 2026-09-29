@@ -203,7 +203,7 @@ print_r($res);
 1. Create a class in `src/adapters/{Brand}.php`:
 ```php
 <?php
-namespace Namingo\\Cardo\\DRS\\Adapters;
+namespace Namingo\Cardo\DRS\Adapters;
 
 use Namingo\Cardo\DRS\Core\BaseAdapter;
 
