@@ -39,7 +39,7 @@ composer dump-autoload -o
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
-use RegistrarAPI\RegistrarAPI;
+use Namingo\Cardo\DRS\RegistrarAPI;
 
 // Pick your registrar by brand string (case-insensitive):
 // 'namesilo', 'godaddy', 'namecheap', 'dynadot'
@@ -203,9 +203,9 @@ print_r($res);
 1. Create a class in `src/adapters/{Brand}.php`:
 ```php
 <?php
-namespace RegistrarAPI/Adapters;
+namespace Namingo\\Cardo\\DRS\\Adapters;
 
-use RegistrarAPI\Core\BaseAdapter;
+use Namingo\Cardo\DRS\Core\BaseAdapter;
 
 class MyRegistrar extends BaseAdapter {
   protected string $brand = 'myregistrar';
@@ -285,7 +285,7 @@ $api->setNameServers('example.com', ['ns1.host.com','ns2.host.com']);
 
 ### NameSilo – Complete Flow
 ```php
-use RegistrarAPI\RegistrarAPI;
+use Namingo\Cardo\DRS\RegistrarAPI;
 
 $api = RegistrarAPI::make('namesilo', ['api_key' => 'KEY']);
 
@@ -377,9 +377,9 @@ if (!empty($check['available'])) {
 3. Example:
 
 ```php
-namespace RegistrarAPI\Adapters;
+namespace Namingo\Cardo\DRS\Adapters;
 
-use RegistrarAPI\Core\BaseAdapter;
+use Namingo\Cardo\DRS\Core\BaseAdapter;
 
 class MyRegistrar extends BaseAdapter {
   protected string $brand = 'myregistrar';
