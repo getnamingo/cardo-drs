@@ -61,7 +61,11 @@ class Namesilo extends BaseAdapter {
         [$code,$body,$err] = $this->request('dnsListRecords', ['domain'=>$domain]);
         $j = $this->json($body);
         $recs=[];
-        foreach (($j['reply']['resource_record'] ?? []) as $r) {
+        $rows=$j['reply']['resource_record'] ?? [];
+        if (isset($rows['type'])) {
+            $rows=[$rows];
+        }
+        foreach ($rows as $r) {
             if (is_array($r)) {
                 $recs[] = $this->normalizeDnsRecord($r);
             }
