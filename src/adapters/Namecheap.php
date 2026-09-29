@@ -104,29 +104,7 @@ class Namecheap extends BaseAdapter
 
     public function registerDomain(string $domain, array $opts): array
     {
-        $registrant = (array) ($opts['registrant'] ?? []);
-
-        $params = [
-            'DomainName' => $domain,
-            'Years' => (int) ($opts['years'] ?? 1),
-            'RegistrantFirstName' => $opts['RegistrantFirstName'] ?? $registrant['first_name'] ?? 'John',
-            'RegistrantLastName' => $opts['RegistrantLastName'] ?? $registrant['last_name'] ?? 'Doe',
-            'RegistrantAddress1' => $opts['RegistrantAddress1'] ?? $registrant['address1'] ?? $registrant['address'] ?? '123 Example Street',
-            'RegistrantCity' => $opts['RegistrantCity'] ?? $registrant['city'] ?? 'City',
-            'RegistrantStateProvince' => $opts['RegistrantStateProvince'] ?? $registrant['state'] ?? $registrant['province'] ?? 'CA',
-            'RegistrantPostalCode' => $opts['RegistrantPostalCode'] ?? $registrant['postal_code'] ?? $registrant['zip'] ?? '90001',
-            'RegistrantCountry' => $opts['RegistrantCountry'] ?? $registrant['country'] ?? 'US',
-            'RegistrantPhone' => $opts['RegistrantPhone'] ?? $registrant['phone'] ?? '+1.5555555555',
-            'RegistrantEmailAddress' => $opts['RegistrantEmailAddress'] ?? $registrant['email'] ?? 'email@example.com',
-        ];
-
-        if (!empty($opts['coupon'])) {
-            $params['PromotionCode'] = $opts['coupon'];
-        }
-        if (array_key_exists('privacy', $opts)) {
-            $params['AddFreeWhoisguard'] = $opts['privacy'] ? 'yes' : 'no';
-            $params['WGEnabled'] = $opts['privacy'] ? 'yes' : 'no';
-        }
+        $params = $this->buildRegistrationParams($domain, $opts);
 
         [$code, $res] = $this->request('namecheap.domains.create', $params);
 
@@ -336,6 +314,92 @@ class Namecheap extends BaseAdapter
         return $res;
     }
 
+    private function buildRegistrationParams(string $domain, array $opts): array
+    {
+        $contacts = (array) ($opts['contacts'] ?? []);
+        $registrant = (array) ($opts['registrant'] ?? $contacts['registrant'] ?? []);
+        $admin = (array) ($contacts['admin'] ?? $opts['admin'] ?? $registrant);
+        $tech = (array) ($contacts['tech'] ?? $opts['tech'] ?? $registrant);
+        $billing = (array) (
+            $contacts['billing']
+            ?? $contacts['aux_billing']
+            ?? $opts['billing']
+            ?? $opts['aux_billing']
+            ?? $registrant
+        );
+
+        $params = array_merge(
+            [
+                'DomainName' => $domain,
+                'Years' => (int) ($opts['years'] ?? 1),
+            ],
+            $this->buildContactParams('Registrant', $registrant, $opts),
+            $this->buildContactParams('Admin', $admin, $opts),
+            $this->buildContactParams('Tech', $tech, $opts),
+            $this->buildContactParams('AuxBilling', $billing, $opts)
+        );
+
+        if (!empty($opts['coupon'])) {
+            $params['PromotionCode'] = $opts['coupon'];
+        }
+        if (array_key_exists('privacy', $opts)) {
+            $params['AddFreeWhoisguard'] = $opts['privacy'] ? 'yes' : 'no';
+            $params['WGEnabled'] = $opts['privacy'] ? 'yes' : 'no';
+        }
+
+        return $params;
+    }
+
+    private function buildContactParams(string $prefix, array $contact, array $opts): array
+    {
+        $pick = static function (array $data, array $keys, string $default): string {
+            foreach ($keys as $key) {
+                if (isset($data[$key]) && $data[$key] !== '') {
+                    return (string) $data[$key];
+                }
+            }
+
+            return $default;
+        };
+
+        $fields = [
+            'FirstName' => [['first_name', 'firstname', 'firstName'], 'John'],
+            'LastName' => [['last_name', 'lastname', 'lastName'], 'Doe'],
+            'Address1' => [['address1', 'address'], '123 Example Street'],
+            'City' => [['city'], 'City'],
+            'StateProvince' => [['state', 'province', 'state_province'], 'CA'],
+            'PostalCode' => [['postal_code', 'postalcode', 'zip'], '90001'],
+            'Country' => [['country'], 'US'],
+            'Phone' => [['phone'], '+1.5555555555'],
+            'EmailAddress' => [['email', 'email_address'], 'email@example.com'],
+        ];
+
+        $params = [];
+        foreach ($fields as $name => [$keys, $default]) {
+            $params[$prefix . $name] = isset($opts[$prefix . $name]) && $opts[$prefix . $name] !== ''
+                ? (string) $opts[$prefix . $name]
+                : $pick($contact, $keys, $default);
+        }
+
+        $optional = [
+            'OrganizationName' => ['organization', 'organization_name', 'org', 'company'],
+            'Address2' => ['address2'],
+            'PhoneExt' => ['phone_ext', 'phone_extension'],
+        ];
+
+        foreach ($optional as $name => $keys) {
+            $value = isset($opts[$prefix . $name]) && $opts[$prefix . $name] !== ''
+                ? (string) $opts[$prefix . $name]
+                : $pick($contact, $keys, '');
+
+            if ($value !== '') {
+                $params[$prefix . $name] = $value;
+            }
+        }
+
+        return $params;
+    }
+
     private function buildDnsParams(string $domain, array $records): array
     {
         $params = [
@@ -394,12 +458,44 @@ class Namecheap extends BaseAdapter
 
     private function result(int $code, \SimpleXMLElement $res): array
     {
+        $ok = $this->commandSuccess($res);
+
         return [
-            'ok' => true,
+            'ok' => $ok,
             'raw' => $this->xmlToArray($res),
             'http' => $code,
-            'err' => '',
+            'err' => $ok ? '' : 'Namecheap command reported failure',
         ];
+    }
+
+    private function commandSuccess(\SimpleXMLElement $res): bool
+    {
+        $nodes = $res->xpath('/ApiResponse/CommandResponse/*');
+        if ($nodes === false || $nodes === []) {
+            return true;
+        }
+
+        $successAttributes = ['IsSuccess', 'Success', 'Registered', 'Renew', 'Transfer', 'Updated'];
+
+        foreach ($nodes as $node) {
+            $attributes = $node->attributes();
+            if ($attributes === null) {
+                continue;
+            }
+
+            foreach ($successAttributes as $name) {
+                if (!isset($attributes[$name])) {
+                    continue;
+                }
+
+                $value = strtolower(trim((string) $attributes[$name]));
+                if (in_array($value, ['false', '0', 'no', 'failed', 'failure'], true)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     private function xmlToArray(\SimpleXMLElement $xml): array
