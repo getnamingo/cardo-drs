@@ -1,9 +1,9 @@
 <?php
-namespace RegistrarAPI\adapters;
+namespace Namingo\Cardo\DRS\Adapters;
 
-use RegistrarAPI\Core\BaseAdapter;
-use RegistrarAPI\Core\Http;
-use RegistrarAPI\Core\DnsRecord;
+use Namingo\Cardo\DRS\Core\BaseAdapter;
+use Namingo\Cardo\DRS\Core\Http;
+use Namingo\Cardo\DRS\Core\DnsRecord;
 
 class Namesilo extends BaseAdapter {
     protected string $brand='namesilo';
