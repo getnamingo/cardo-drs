@@ -1,6 +1,6 @@
 <?php
 
-namespace Namingo\Registrars;
+namespace Namingo\Cardo\DRS;
 
 abstract class Adapter
 {

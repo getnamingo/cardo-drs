@@ -1,21 +1,21 @@
 <?php
 
-namespace Namingo\Registrars\Adapter;
+namespace Namingo\Cardo\DRS\Adapter;
 
 use DateTime;
-use Namingo\Registrars\Contact;
-use Namingo\Registrars\Exception as DomainsException;
-use Namingo\Registrars\Exception\DomainTakenException;
-use Namingo\Registrars\Exception\InvalidContactException;
-use Namingo\Registrars\Exception\PriceNotFoundException;
-use Namingo\Registrars\Domain;
-use Namingo\Registrars\Renewal;
-use Namingo\Registrars\TransferStatus;
-use Namingo\Registrars\Adapter;
-use Namingo\Registrars\TransferStatusEnum;
-use Namingo\Registrars\Registrar;
-use Namingo\Registrars\Price;
-use Namingo\Registrars\UpdateDetails;
+use Namingo\Cardo\DRS\Contact;
+use Namingo\Cardo\DRS\Exception as DomainsException;
+use Namingo\Cardo\DRS\Exception\DomainTakenException;
+use Namingo\Cardo\DRS\Exception\InvalidContactException;
+use Namingo\Cardo\DRS\Exception\PriceNotFoundException;
+use Namingo\Cardo\DRS\Domain;
+use Namingo\Cardo\DRS\Renewal;
+use Namingo\Cardo\DRS\TransferStatus;
+use Namingo\Cardo\DRS\Adapter;
+use Namingo\Cardo\DRS\TransferStatusEnum;
+use Namingo\Cardo\DRS\Registrar;
+use Namingo\Cardo\DRS\Price;
+use Namingo\Cardo\DRS\UpdateDetails;
 
 class Mock extends Adapter
 {

@@ -1,28 +1,28 @@
 <?php
 
-namespace Namingo\Registrars\Adapter;
+namespace Namingo\Cardo\DRS\Adapter;
 
 use DateTime;
 use Exception;
-use Namingo\Registrars\Contact;
-use Namingo\Registrars\Exception as DomainsException;
-use Namingo\Registrars\Exception\DomainTakenException;
-use Namingo\Registrars\Exception\InvalidAuthCodeException;
-use Namingo\Registrars\Exception\InvalidContactException;
-use Namingo\Registrars\Exception\AuthException;
-use Namingo\Registrars\Exception\InvalidPeriodException;
-use Namingo\Registrars\Exception\PriceNotFoundException;
-use Namingo\Registrars\Exception\DomainNotFoundException;
-use Namingo\Registrars\Exception\RateLimitException;
-use Namingo\Registrars\Exception\UnsupportedTldException;
-use Namingo\Registrars\Adapter;
-use Namingo\Registrars\Renewal;
-use Namingo\Registrars\TransferStatus;
-use Namingo\Registrars\Domain;
-use Namingo\Registrars\TransferStatusEnum;
-use Namingo\Registrars\UpdateDetails;
-use Namingo\Registrars;
-use Namingo\Registrars\Price;
+use Namingo\Cardo\DRS\Contact;
+use Namingo\Cardo\DRS\Exception as DomainsException;
+use Namingo\Cardo\DRS\Exception\DomainTakenException;
+use Namingo\Cardo\DRS\Exception\InvalidAuthCodeException;
+use Namingo\Cardo\DRS\Exception\InvalidContactException;
+use Namingo\Cardo\DRS\Exception\AuthException;
+use Namingo\Cardo\DRS\Exception\InvalidPeriodException;
+use Namingo\Cardo\DRS\Exception\PriceNotFoundException;
+use Namingo\Cardo\DRS\Exception\DomainNotFoundException;
+use Namingo\Cardo\DRS\Exception\RateLimitException;
+use Namingo\Cardo\DRS\Exception\UnsupportedTldException;
+use Namingo\Cardo\DRS\Adapter;
+use Namingo\Cardo\DRS\Renewal;
+use Namingo\Cardo\DRS\TransferStatus;
+use Namingo\Cardo\DRS\Domain;
+use Namingo\Cardo\DRS\TransferStatusEnum;
+use Namingo\Cardo\DRS\UpdateDetails;
+use Namingo\Cardo\DRS;
+use Namingo\Cardo\DRS\Price;
 
 class NameCom extends Adapter
 {

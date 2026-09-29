@@ -1,20 +1,29 @@
 {
   "name": "namingo/registrars",
-  "description": "A unified PHP library for working with multiple domain registrars through one consistent API.",
+  "description": "Cardo DRS - a unified PHP interface for working with multiple domain registrar APIs.",
+  "homepage": "https://github.com/getnamingo/cardo-drs",
   "type": "library",
-  "keywords": ["php","framework", "upf", "domains", "tld", "ICANN"],
+  "keywords": ["php", "domains", "registrar", "domain-registration", "api", "cardo", "drs"],
   "license": "MIT",
   "authors": [
-      {
-          "name": "Taras Kondratyuk",
-          "email": "help@namingo.org"
-      }
+    {
+      "name": "Taras Kondratyuk",
+      "email": "help@namingo.org"
+    }
   ],
   "autoload": {
-      "psr-4": {"Namingo\\Registrars\\": "src/"}
+    "psr-4": {
+      "Namingo\\Cardo\\DRS\\": "src/"
+    },
+    "files": [
+      "src/compat.php"
+    ]
   },
   "require": {
-      "php": ">=8.3",
-      "utopia-php/validators": "0.*"
+    "php": ">=8.3",
+    "utopia-php/validators": "0.*"
+  },
+  "scripts": {
+    "test": "php tests/CompatibilityTest.php"
   }
 }

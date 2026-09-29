@@ -1,8 +1,8 @@
 <?php
 
-namespace Namingo\Registrars\Exception;
+namespace Namingo\Cardo\DRS\Exception;
 
-use Namingo\Registrars\Exception;
+use Namingo\Cardo\DRS\Exception;
 
 class InvalidPeriodException extends Exception
 {

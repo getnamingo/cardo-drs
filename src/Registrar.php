@@ -1,14 +1,14 @@
 <?php
 
-namespace Namingo\Registrars;
+namespace Namingo\Cardo\DRS;
 
-use Namingo\Registrars\Adapter as RegistrarAdapter;
-use Namingo\Registrars\Domain;
-use Namingo\Registrars\Renewal;
-use Namingo\Registrars\Contact;
-use Namingo\Registrars\Price;
-use Namingo\Registrars\TransferStatus;
-use Namingo\Registrars\UpdateDetails;
+use Namingo\Cardo\DRS\Adapter as RegistrarAdapter;
+use Namingo\Cardo\DRS\Domain;
+use Namingo\Cardo\DRS\Renewal;
+use Namingo\Cardo\DRS\Contact;
+use Namingo\Cardo\DRS\Price;
+use Namingo\Cardo\DRS\TransferStatus;
+use Namingo\Cardo\DRS\UpdateDetails;
 
 class Registrar
 {
