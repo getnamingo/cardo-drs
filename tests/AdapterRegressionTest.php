@@ -6,9 +6,11 @@ require_once __DIR__ . '/../src/Core/BaseAdapter.php';
 require_once __DIR__ . '/../src/Core/Http.php';
 require_once __DIR__ . '/../src/adapters/OpenSRS.php';
 require_once __DIR__ . '/../src/adapters/NameCom.php';
+require_once __DIR__ . '/../src/adapters/Namesilo.php';
 
 use Namingo\Cardo\DRS\Adapters\NameCom;
 use Namingo\Cardo\DRS\Adapters\OpenSRS;
+use Namingo\Cardo\DRS\Adapters\Namesilo;
 
 function assertTrue(bool $condition, string $message): void
 {
@@ -118,6 +120,29 @@ assertTrue(
         'prio' => 20,
     ]) === false,
     'Name.com DNS matcher must not delete records with a different priority'
+);
+
+$namesilo = new Namesilo(['api_key' => 'super-secret-key']);
+$redactQuery = privateMethod($namesilo, 'redactQuery');
+$redacted = $redactQuery->invoke($namesilo, [
+    'key' => 'super-secret-key',
+    'auth' => 'transfer-secret',
+    'auth_code' => 'another-secret',
+    'epp_code' => 'epp-secret',
+    'domain' => 'example.test',
+]);
+
+assertTrue(
+    $redacted['key'] === '***'
+        && $redacted['auth'] === '***'
+        && $redacted['auth_code'] === '***'
+        && $redacted['epp_code'] === '***',
+    'NameSilo endpoint metadata must redact API and transfer credentials'
+);
+
+assertTrue(
+    $redacted['domain'] === 'example.test',
+    'NameSilo endpoint metadata must preserve non-sensitive query parameters'
 );
 
 echo "Adapter regression tests passed.\n";
