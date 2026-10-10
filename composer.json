@@ -13,7 +13,8 @@
     "dynadot",
     "name.com",
     "namecom",
-    "opensrs"
+    "opensrs",
+    "opusdns"
   ],
   "homepage": "https://github.com/getnamingo/cardo-drs",
   "support": {
@@ -47,7 +48,8 @@
   "scripts": {
     "test": [
       "php tests/AutoloadRegressionTest.php",
-      "php tests/AdapterRegressionTest.php"
+      "php tests/AdapterRegressionTest.php",
+      "php tests/OpusDNSRegressionTest.php"
     ]
   }
 }

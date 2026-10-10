@@ -31,7 +31,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Namingo\Cardo\DRS\RegistrarAPI;
 
 // Pick your registrar by brand string (case-insensitive):
-// 'namesilo', 'godaddy', 'namecheap', 'dynadot', 'namecom', 'opensrs'
+// 'namesilo', 'godaddy', 'namecheap', 'dynadot', 'namecom', 'opensrs', 'opusdns'
 $api = RegistrarAPI::make('namesilo', [
     'api_key' => 'YOUR_NAMESILO_API_KEY'
 ]);
@@ -56,6 +56,7 @@ Registrar adapters require provider-specific API credentials. Pass the required 
 | **Dynadot** |
 | **Name.com** |
 | **OpenSRS** |
+| **OpusDNS** |
 
 ## Credentials per Adapter
 
@@ -111,6 +112,80 @@ $api = RegistrarAPI::make('opensrs', [
   'username' => 'RESELLER_USERNAME',
   'password' => 'REGISTRATION_PASSWORD',
   // optional: 'endpoint' => 'https://horizon.opensrs.net:55443'
+]);
+```
+
+### OpusDNS
+```php
+$api = RegistrarAPI::make('opusdns', [
+  'api_key' => 'YOUR_API_KEY',
+  // optional: 'sandbox' => true (https://sandbox.opusdns.com)
+  // optional: 'base' => 'https://api.opusdns.com' (HTTPS API root, without /v1)
+]);
+```
+
+The adapter follows the v1 API contract in the official
+[OpusDNS PHP client](https://github.com/OpusDNS/opusdns-php-client), using Cardo's
+existing HTTP transport. No additional package is required. `opus-dns` is also a
+supported brand alias; `token` and `endpoint` are credential aliases.
+
+```php
+$api->registerDomain('example.com', [
+  'years' => 1,
+  'auto_renew' => false,
+  'create_zone' => true,
+  'contacts' => [
+    'registrant' => 'contact_EXISTING_ID',
+    'admin' => 'contact_EXISTING_ID',
+    'tech' => 'contact_EXISTING_ID',
+    'billing' => 'contact_EXISTING_ID',
+  ],
+  'nameservers' => ['ns1.opusdns.com', 'ns2.opusdns.com'],
+]);
+```
+
+Supply only the contact roles required by the TLD. Each role accepts an existing
+contact ID, a `['contact_id' => '...', 'attributes' => [...]]` handle, a contact
+data array, or a list of handles/contact arrays. A top-level `registrant` array
+is shorthand for `contacts['registrant']`. New contacts require `first_name`,
+`last_name`, `email`, `phone`, `street` (or `address`/`address1`), `city`,
+`postal_code` (or `zip`), and `country`; `org`, `state`, `fax`, `title` and
+`disclose` are optional. Identical new contacts are reused within the same call.
+Created contacts remain in the account if the subsequent domain request fails;
+reuse their IDs on retry. Domain results include the submitted `contacts`; contact
+creation failures include any `created_contact_ids` from earlier roles. No missing
+roles are filled automatically.
+
+`privacy => true` requests `disclose => false` for newly created contacts. It
+does not change existing handles or purchase a privacy service, and registries
+may still disclose data under their own rules. `attributes` and
+`claims_notice_acceptance_hash` can be passed for TLD-specific requirements;
+contact handles can carry inline `attributes`. Premium confirmation uses the
+explicit decimal string `expected_price`, which is also accepted on renewal
+and transfer.
+
+Renewal reads the current expiry first, unless `current_expiry_date` is supplied.
+Transfers accept `auth_code`, optional contacts and nameservers, and optional
+`years`; omitting `years` leaves the transfer period to registry policy.
+
+DNS operates on an **existing OpusDNS-hosted zone** (`create_zone => true` creates
+one at registration/transfer; use `raw('/v1/dns', ...)` to create one separately).
+Hosts accept `@`, relative names, or in-zone fully qualified names. Values are
+DNS presentation-format RDATA: keep TXT quoting and domain-name trailing dots
+where needed. MX `prio`/`priority` is prepended to the target; for SRV, put the
+weight, port and target in `value`, with the priority in `prio`.
+
+`setDNS()` sends the complete desired RRset list in one PUT; records of the same
+name/type must use one TTL. `addDNS()` upserts one record. `getDNS()` flattens
+RRsets and exposes `protected`; OpusDNS does not supply individual record IDs.
+`delDNS()` matches `type`, `host`, `value`, and/or `prio`/`priority` and refuses
+protected records. An empty or ID-only selector is rejected.
+
+```php
+// Raw paths include /v1. Optional query arrays use repeated keys.
+$api->raw('/v1/domains/example.com', [
+  'method' => 'PATCH',
+  'body' => ['status_changes' => ['add' => ['clientTransferProhibited']]],
 ]);
 ```
 
