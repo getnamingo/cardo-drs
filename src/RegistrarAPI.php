@@ -16,6 +16,8 @@ final class RegistrarAPI
         'name.com'  => 'NameCom',
         'namecom'   => 'NameCom',
         'name-com'  => 'NameCom',
+        'opusdns'  => 'OpusDNS',
+        'opus-dns' => 'OpusDNS',
         'opensrs'   => 'OpenSRS',
         'open-srs'  => 'OpenSRS',
     ];
