@@ -329,7 +329,12 @@ final class OpusDNS extends BaseAdapter
                             return $reply + ['contacts' => $normalized, 'created_contact_ids' => array_values($created)];
                         }
                         if (empty($reply['raw']['contact_id'])) {
-                            return ['ok' => false, 'raw' => $reply['raw'], 'err' => 'OpusDNS contact response is missing contact_id'];
+                            return [
+                                'ok' => false,
+                                'raw' => $reply['raw'],
+                                'err' => 'OpusDNS contact response is missing contact_id',
+                                'created_contact_ids' => array_values($created),
+                            ];
                         }
                         $created[$key] = (string) $reply['raw']['contact_id'];
                     }
